@@ -2,21 +2,22 @@
 'use client'
 import { useEffect, useMemo, useState } from "react";
 import AlbumComponent from "@/components/album";
-import JSONPService from "@/services/http.service";
-import { Album } from "@/models/album.model";
+import DiscogsService from "@/services/discogs.service";
+import SearchRelease from "@/models/search-release.model";
 
+/**
+ * The main page for searching albums
+ * 
+ * @returns {JSX}
+ */
 export default function Home() {
 
   const [albums, setAlbums] = useState([]);
   const [filters, setFilters] = useState({ year: "2024", genre: "", country: "Canada" });
   const showYear = filters.year != "";
 
-  const apiService = useMemo(() => { return new JSONPService(); }, []);
-
-
   useEffect(() => {
-    apiService.request(`/database/search?year=${filters.year}&genre=${filters.genre}&country=${filters.country}&type=release`).then((result) => {
-      console.log(result);
+    DiscogsService.searchReleases(`year=${filters.year}&genre=${filters.genre}&country=${filters.country}`).then((result) => {
       if (result && result.results)
         setAlbums(result.results);
     });
@@ -53,10 +54,9 @@ export default function Home() {
         <input value={filters.country} onChange={getFilterChangeHandler("country")} className="border-2 rounded-sm mx-2" />
       </search>
       <ul className="flex flex-row flex-wrap gap-8 list-none items-center sm:items-start text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-        {albums.map((album: Album) => (<AlbumComponent
+        {albums.map((album: SearchRelease) => (<AlbumComponent
           key={album.id}
           album={album}
-          apiService={apiService}
           showYear={showYear}
         />))}
       </ul>
